@@ -42,6 +42,7 @@ export async function loadJSON (url, cache, timeout, abortSignal) {
 
 function requestRaw (url, method, data, timeout, abortSignal) {
   return new Promise((resolve, reject) => {
+    /*
     const target = new URL(url)
     if (method === 'GET' && data) {
       target.search = '?dns=' + base64URL.decode(data)
@@ -131,6 +132,7 @@ function requestRaw (url, method, data, timeout, abortSignal) {
         xhr.abort()
       } catch (e) { }
     }
+    */
   })
 }
 
