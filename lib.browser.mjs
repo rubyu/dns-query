@@ -40,100 +40,40 @@ export async function loadJSON (url, cache, timeout, abortSignal) {
   return result
 }
 
-function requestRaw (url, method, data, timeout, abortSignal) {
-  return new Promise((resolve, reject) => {
-    /*
-    const target = new URL(url)
-    if (method === 'GET' && data) {
-      target.search = '?dns=' + base64URL.decode(data)
-    }
-    const uri = target.toString()
-    const xhr = new XMLHttpRequest()
-    xhr.open(method, uri, true)
-    xhr.setRequestHeader('Accept', contentType)
-    if (method === 'POST') {
-      xhr.setRequestHeader('Content-Type', contentType)
-    }
-    xhr.responseType = 'arraybuffer'
-    xhr.timeout = timeout
-    xhr.ontimeout = ontimeout
-    xhr.onreadystatechange = onreadystatechange
-    xhr.onerror = onerror
-    xhr.onload = onload
-    if (method === 'POST') {
-      xhr.send(data)
-    } else {
-      xhr.send()
-    }
+function requestRaw(url, method, data, timeout, abortSignal) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const target = new URL(url);
+      if (method === 'GET' && data) {
+        target.search = '?dns=' + base64URL.decode(data);
+      }
+      const uri = target.toString();
 
-    if (abortSignal) {
-      abortSignal.addEventListener('abort', onabort)
-    }
+      const headers = new Headers();
+      headers.append('Accept', contentType);
+      if (method === 'POST') {
+        headers.append('Content-Type', contentType);
+      }
 
-    function ontimeout () {
-      finish(new TimeoutError(timeout))
-      try {
-        xhr.abort()
-      } catch (e) { }
-    }
+      const init = {
+        method: method,
+        headers: headers,
+        body: method === 'POST' ? data : null,
+        signal: abortSignal
+      };
 
-    function onload () {
-      if (xhr.status !== 200) {
-        finish(new HTTPStatusError(uri, xhr.status, method))
+      const response = await fetch(uri, init);
+
+      if (response.ok) {
+        const buf = await response.arrayBuffer();
+        resolve({ data: new Uint8Array(buf), response });
       } else {
-        let buf
-        if (typeof xhr.response === 'string') {
-          buf = utf8Codec.encode(xhr.response)
-        } else if (xhr.response instanceof Uint8Array) {
-          buf = xhr.response
-        } else if (Array.isArray(xhr.response) || xhr.response instanceof ArrayBuffer) {
-          buf = new Uint8Array(xhr.response)
-        } else {
-          throw new Error('Unprocessable response ' + xhr.response)
-        }
-        finish(null, buf)
+        reject(new HTTPStatusError(uri, response.status, method));
       }
+    } catch (error) {
+      reject(error);
     }
-
-    function onreadystatechange () {
-      if (xhr.readyState > 1 && xhr.status !== 200 && xhr.status !== 0) {
-        finish(new HTTPStatusError(uri, xhr.status, method))
-        try {
-          xhr.abort()
-        } catch (e) { }
-      }
-    }
-
-    let finish = function (error, data) {
-      finish = noop
-      if (abortSignal) {
-        abortSignal.removeEventListener('abort', onabort)
-      }
-      if (error) {
-        resolve({
-          error,
-          response: xhr
-        })
-      } else {
-        resolve({
-          data,
-          response: xhr
-        })
-      }
-    }
-
-    function onerror () {
-      finish(xhr.status === 200 ? new Error('Inexplicable XHR Error') : new HTTPStatusError(uri, xhr.status, method))
-    }
-
-    function onabort () {
-      finish(new AbortError())
-      try {
-        xhr.abort()
-      } catch (e) { }
-    }
-    */
-  })
+  });
 }
 
 export function request (url, method, packet, timeout, abortSignal) {
