@@ -9,7 +9,7 @@ if (!AbortError) {
 AbortError.prototype.name = 'AbortError'
 AbortError.prototype.code = 'ABORT_ERR'
 
-const URL = (typeof globalThis !== 'undefined' && globalThis.URL) || require('url').URL
+const URL = (typeof globalThis !== 'undefined' && globalThis.URL) || throw new Exception('cannot use URL')
 
 export { AbortError, URL }
 
